@@ -37,6 +37,7 @@
 
 #include "TEncTop.h"
 #include "TEncSlice.h"
+#include "TEncMemoryTracer.h"
 #include <math.h>
 
 //! \ingroup TLibEncoder
@@ -1102,6 +1103,16 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
       }
 #endif
 
+	  //Felipe
+	  Int xLCU = pcCU->getCUPelX();
+	  Int yLCU = pcCU->getCUPelY();
+	  Int rasterIdCU = (xLCU/64) + ( (yLCU/64) * pcCU->getPic()->getFrameWidthInCU() );
+	  Int idTile = pcCU->getPic()->getPicSym()->getTileIdxMap(rasterIdCU);
+	  
+	  if(pcCU->getSlice()->getSliceType() != I_SLICE) {
+		TEncMemoryTracer::initLCU(xLCU, yLCU, idTile, pcCU->getPic()->getPOC());
+	  }	  
+	  
       // run CU encoder
       m_pcCuEncoder->compressCU( pcCU );
 

@@ -39,12 +39,22 @@
 #include <iostream>
 #include "TAppEncTop.h"
 #include "TAppCommon/program_options_lite.h"
+#include "TLibEncoder/TEncMemoryTracer.h"
 
 using namespace std;
 namespace po = df::program_options_lite;
 
 //! \ingroup TAppEncoder
 //! \{
+
+void initStaticClasses() {
+	TEncMemoryTracer::init("trace.txt");
+}
+
+void finalizeStaticClasses() {
+	TEncMemoryTracer::finalize();
+}
+
 
 // ====================================================================================================================
 // Main function
@@ -64,6 +74,7 @@ int main(int argc, char* argv[])
 
   // create application encoder class
   cTAppEncTop.create();
+  
 
   // parse configuration
   try
@@ -79,6 +90,9 @@ int main(int argc, char* argv[])
     cerr << "Error parsing option \""<< e.arg <<"\" with argument \""<< e.val <<"\"." << endl;
     return 1;
   }
+  
+  //Felipe: static classes initialization
+  initStaticClasses();
 
   // starting time
   double dResult;
@@ -90,6 +104,8 @@ int main(int argc, char* argv[])
   // ending time
   dResult = (double)(clock()-lBefore) / CLOCKS_PER_SEC;
   printf("\n Total Time: %12.3f sec.\n", dResult);
+  
+  finalizeStaticClasses();
 
   // destroy application encoder class
   cTAppEncTop.destroy();

@@ -39,6 +39,7 @@
 #include "TLibCommon/TComRom.h"
 #include "TLibCommon/TComMotionInfo.h"
 #include "TEncSearch.h"
+#include "TEncMemoryTracer.h"
 #include <math.h>
 
 //! \ingroup TLibEncoder
@@ -292,7 +293,7 @@ void TEncSearch::init(TEncCfg*      pcEncCfg,
 
 #define TZ_SEARCH_CONFIGURATION                                                                                 \
 const Int  iRaster                  = 5;  /* TZ soll von aussen ?ergeben werden */                            \
-const Bool bTestOtherPredictedMV    = 0;                                                                      \
+const Bool bTestOtherPredictedMV    = 1;                                                                      \
 const Bool bTestZeroVector          = 1;                                                                      \
 const Bool bTestZeroVectorStart     = 0;                                                                      \
 const Bool bTestZeroVectorStop      = 0;                                                                      \
@@ -303,7 +304,7 @@ const Bool bEnableRasterSearch      = 1;                                        
 const Bool bAlwaysRasterSearch      = 0;  /* ===== 1: BETTER but factor 2 slower ===== */                     \
 const Bool bRasterRefinementEnable  = 0;  /* enable either raster refinement or star refinement */            \
 const Bool bRasterRefinementDiamond = 0;  /* 1 = xTZ8PointDiamondSearch   0 = xTZ8PointSquareSearch */        \
-const Bool bStarRefinementEnable    = 1;  /* enable either star refinement or raster refinement */            \
+const Bool bStarRefinementEnable    = 0;  /* enable either star refinement or raster refinement */            \
 const Bool bStarRefinementDiamond   = 1;  /* 1 = xTZ8PointDiamondSearch   0 = xTZ8PointSquareSearch */        \
 const Bool bStarRefinementStop      = 0;                                                                      \
 const UInt uiStarRefinementRounds   = 2;  /* star refinement stop X rounds after best match (must be >=1) */  \
@@ -337,6 +338,11 @@ __inline Void TEncSearch::xTZSearchHelp( TComPattern* pcPatternKey, IntTZSearchS
   
   // motion cost
   uiSad += m_pcRdCost->getCost( iSearchX, iSearchY );
+  
+  //Felipe
+  if( !TEncMemoryTracer::firstOrRasterSearchFlag ) {
+	TEncMemoryTracer::insertCandidate(iSearchX, iSearchY);
+  }
   
   if( uiSad < rcStruct.uiBestSad )
   {
@@ -4073,6 +4079,14 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   m_pcRdCost->setCostScale  ( 2 );
 
   setWpScalingDistParam( pcCU, iRefIdxPred, eRefPicList );
+  
+  //Felipe: init PU tracing
+ 
+  if( !bBi ) {
+	TEncMemoryTracer::initPU(iPartIdx, pcCU->getPartitionSize(0), iRefIdxPred);
+  }
+  
+  
   //  Do integer search
   if ( !m_iFastSearch || bBi )
   {
@@ -4244,8 +4258,12 @@ Void TEncSearch::xTZSearch( TComDataCU* pcCU, TComPattern* pcPatternKey, Pel* pi
   Int  iDist = 0;
   Int  iStartX = cStruct.iBestX;
   Int  iStartY = cStruct.iBestY;
+    
+  //Felipe
+  TEncMemoryTracer::insertFirstSearch(iStartX, iStartY);
+  TEncMemoryTracer::firstOrRasterSearchFlag = true;
   
-  // first search
+  // first search  
   for ( iDist = 1; iDist <= (Int)uiSearchRange; iDist*=2 )
   {
     if ( bFirstSearchDiamond == 1 )
@@ -4262,6 +4280,8 @@ Void TEncSearch::xTZSearch( TComDataCU* pcCU, TComPattern* pcPatternKey, Pel* pi
       break;
     }
   }
+  //Felipe
+  TEncMemoryTracer::firstOrRasterSearchFlag = false;
   
   // test whether zero Mv is a better start point than Median predictor
   if ( bTestZeroVectorStart && ((cStruct.iBestX != 0) || (cStruct.iBestY != 0)) )
@@ -4287,10 +4307,16 @@ Void TEncSearch::xTZSearch( TComDataCU* pcCU, TComPattern* pcPatternKey, Pel* pi
     cStruct.uiBestDistance = 0;
     xTZ2PointSearch( pcPatternKey, cStruct, pcMvSrchRngLT, pcMvSrchRngRB );
   }
+
   
   // raster search if distance is too big
   if ( bEnableRasterSearch && ( ((Int)(cStruct.uiBestDistance) > iRaster) || bAlwaysRasterSearch ) )
   {
+	    
+	//Felipe
+	TEncMemoryTracer::insertRasterSearch(iSrchRngHorLeft, iSrchRngHorRight, iSrchRngVerTop, iSrchRngVerBottom);
+	TEncMemoryTracer::firstOrRasterSearchFlag = true;
+	
     cStruct.uiBestDistance = iRaster;
     for ( iStartY = iSrchRngVerTop; iStartY <= iSrchRngVerBottom; iStartY += iRaster )
     {
@@ -4300,6 +4326,8 @@ Void TEncSearch::xTZSearch( TComDataCU* pcCU, TComPattern* pcPatternKey, Pel* pi
       }
     }
   }
+  //Felipe
+  TEncMemoryTracer::firstOrRasterSearchFlag = false;
   
   // raster refinement
   if ( bRasterRefinementEnable && cStruct.uiBestDistance > 0 )

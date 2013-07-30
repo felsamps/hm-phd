@@ -39,6 +39,7 @@
 #include "TEncTop.h"
 #include "TEncCu.h"
 #include "TEncAnalyze.h"
+#include "TEncMemoryTracer.h"
 
 #include <cmath>
 #include <algorithm>
@@ -385,6 +386,14 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt u
 
   static  Double  afCost[ MAX_CU_DEPTH ];
   static  Int      aiNum [ MAX_CU_DEPTH ];
+  
+  //Felipe
+  Int xCU = rpcBestCU->getCUPelX();
+  Int yCU = rpcBestCU->getCUPelY();
+  
+  if(rpcBestCU->getSlice()->getSliceType() != I_SLICE) {
+	TEncMemoryTracer::initCU(xCU, yCU, rpcBestCU->getDepth(0));  
+  }
 
   if ( rpcBestCU->getAddr() == 0 )
   {
