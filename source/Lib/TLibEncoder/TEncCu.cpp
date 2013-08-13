@@ -388,13 +388,15 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt u
   static  Int      aiNum [ MAX_CU_DEPTH ];
   
   //Felipe
+#if MEM_TRACE_EN
   Int xCU = rpcBestCU->getCUPelX();
   Int yCU = rpcBestCU->getCUPelY();
   
   if(rpcBestCU->getSlice()->getSliceType() != I_SLICE) {
 	TEncMemoryTracer::initCU(xCU, yCU, rpcBestCU->getDepth(0));  
   }
-
+#endif
+ 
   if ( rpcBestCU->getAddr() == 0 )
   {
     ::memset( afCost, 0, sizeof( afCost ) );

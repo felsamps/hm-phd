@@ -17,7 +17,7 @@ void TEncMemoryTracer::finalize() {
 }
 
 void TEncMemoryTracer::initLCU(Int xLCU, Int yLCU, Int idTile, Int idFrame) {
-	std::string outStr = "LCU ";
+	std::string outStr = "L ";
 	
 	std::stringstream ss;
 	ss << xLCU << " ";
@@ -30,7 +30,7 @@ void TEncMemoryTracer::initLCU(Int xLCU, Int yLCU, Int idTile, Int idFrame) {
 }
 
 void TEncMemoryTracer::initCU(Int xCU, Int yCU, Int depthCU) {
-	std::string outStr = "CU ";
+	std::string outStr = "U ";
 	
 	std::stringstream ss;
 	ss << xCU << " ";
@@ -42,7 +42,7 @@ void TEncMemoryTracer::initCU(Int xCU, Int yCU, Int depthCU) {
 }
 
 void TEncMemoryTracer::initPU(Int idPart, Int sizePU, Int idRefFrame) {
-	std::string outStr = "PU ";
+	std::string outStr = "P ";
 	
 	std::stringstream ss;
 	ss << idPart << " ";
@@ -86,4 +86,8 @@ void TEncMemoryTracer::insertRasterSearch(Int xLeft, Int xRight, Int yTop, Int y
 	
 	outStr += ss.str();
 	fp << outStr;
+}
+
+void TEncMemoryTracer::finalizeLCU() {
+	fp << "E" << std::endl;
 }

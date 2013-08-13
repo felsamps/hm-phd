@@ -40,6 +40,7 @@
 #include "TLibCommon/TComMotionInfo.h"
 #include "TEncSearch.h"
 #include "TEncMemoryTracer.h"
+#include "TEncVectorsTracing.h"
 #include <math.h>
 
 //! \ingroup TLibEncoder
@@ -340,9 +341,11 @@ __inline Void TEncSearch::xTZSearchHelp( TComPattern* pcPatternKey, IntTZSearchS
   uiSad += m_pcRdCost->getCost( iSearchX, iSearchY );
   
   //Felipe
+#if MEM_TRACE_EN
   if( !TEncMemoryTracer::firstOrRasterSearchFlag ) {
 	TEncMemoryTracer::insertCandidate(iSearchX, iSearchY);
   }
+#endif
   
   if( uiSad < rcStruct.uiBestSad )
   {
@@ -4081,10 +4084,11 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   setWpScalingDistParam( pcCU, iRefIdxPred, eRefPicList );
   
   //Felipe: init PU tracing
- 
+#if MEM_TRACE_EN
   if( !bBi ) {
-	TEncMemoryTracer::initPU(iPartIdx, pcCU->getPartitionSize(0), iRefIdxPred);
+	TEncMemoryTracer::initPU(iPartIdx, pcCU->getPartitionSize(0), pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPOC());
   }
+#endif
   
   
   //  Do integer search
@@ -4098,6 +4102,25 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
     xPatternSearchFast  ( pcCU, pcPatternKey, piRefY, iRefStride, &cMvSrchRngLT, &cMvSrchRngRB, rcMv, ruiCost );
   }
   
+      //TODO GET MOTION VECTORS
+#if MV_TRACE_EN
+  UInt idRefFrame = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPOC();
+  
+  
+  UInt idCurrFrame = pcCU->getPic()->getPOC();
+  UInt xCU = pcCU->getCUPelX() / MV_TARGET_CU_SIZE; 
+  UInt yCU = pcCU->getCUPelY() / MV_TARGET_CU_SIZE;
+  Short xMv = rcMv.getHor();
+  Short yMv = rcMv.getVer();
+  TEncVectorsTracing::setIdRefFrame(idRefFrame);
+  TEncVectorsTracing::setBiPrediction(bBi);
+    
+  if( pcCU->getWidth(0) == MV_TARGET_CU_SIZE and pcCU->getPartitionSize(0) == MV_TARGET_PU ) {	
+	TEncVectorsTracing::insertMV(idCurrFrame, xCU, yCU, xMv, yMv);
+  }
+#endif
+  
+  
   m_pcRdCost->getMotionCost( 1, 0 );
   m_pcRdCost->setCostScale ( 1 );
   
@@ -4107,12 +4130,13 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
                           );
   }
   
-  
-  
+
   m_pcRdCost->setCostScale( 0 );
   rcMv <<= 2;
   rcMv += (cMvHalf <<= 1);
   rcMv +=  cMvQter;
+  
+
   
   UInt uiMvBits = m_pcRdCost->getBits( rcMv.getHor(), rcMv.getVer() );
   
@@ -4258,10 +4282,25 @@ Void TEncSearch::xTZSearch( TComDataCU* pcCU, TComPattern* pcPatternKey, Pel* pi
   Int  iDist = 0;
   Int  iStartX = cStruct.iBestX;
   Int  iStartY = cStruct.iBestY;
+  
+  //Felipe: getting predictor!
+  #if MV_TRACE_EN
+  /*UInt idCurrFrame = pcCU->getPic()->getPOC();
+  UInt xCU = pcCU->getCUPelX() / MV_TARGET_CU_SIZE; 
+  UInt yCU = pcCU->getCUPelY() / MV_TARGET_CU_SIZE;
+  Short xMv = rcMv.getHor();
+  Short yMv = rcMv.getVer();
+  
+  if( pcCU->getWidth(0) == MV_TARGET_CU_SIZE and pcCU->getPartitionSize(0) == MV_TARGET_PU ) {	
+	TEncVectorsTracing::insertMV(idCurrFrame, xCU, yCU, xMv, yMv);
+  }*/
+#endif
     
   //Felipe
+#if MEM_TRACE_EN
   TEncMemoryTracer::insertFirstSearch(iStartX, iStartY);
   TEncMemoryTracer::firstOrRasterSearchFlag = true;
+#endif
   
   // first search  
   for ( iDist = 1; iDist <= (Int)uiSearchRange; iDist*=2 )
@@ -4281,7 +4320,9 @@ Void TEncSearch::xTZSearch( TComDataCU* pcCU, TComPattern* pcPatternKey, Pel* pi
     }
   }
   //Felipe
+#if MEM_TRACE_EN
   TEncMemoryTracer::firstOrRasterSearchFlag = false;
+#endif
   
   // test whether zero Mv is a better start point than Median predictor
   if ( bTestZeroVectorStart && ((cStruct.iBestX != 0) || (cStruct.iBestY != 0)) )
@@ -4314,8 +4355,10 @@ Void TEncSearch::xTZSearch( TComDataCU* pcCU, TComPattern* pcPatternKey, Pel* pi
   {
 	    
 	//Felipe
+#if MEM_TRACE_EN
 	TEncMemoryTracer::insertRasterSearch(iSrchRngHorLeft, iSrchRngHorRight, iSrchRngVerTop, iSrchRngVerBottom);
 	TEncMemoryTracer::firstOrRasterSearchFlag = true;
+#endif
 	
     cStruct.uiBestDistance = iRaster;
     for ( iStartY = iSrchRngVerTop; iStartY <= iSrchRngVerBottom; iStartY += iRaster )
@@ -4327,7 +4370,9 @@ Void TEncSearch::xTZSearch( TComDataCU* pcCU, TComPattern* pcPatternKey, Pel* pi
     }
   }
   //Felipe
+#if MEM_TRACE_EN
   TEncMemoryTracer::firstOrRasterSearchFlag = false;
+#endif
   
   // raster refinement
   if ( bRasterRefinementEnable && cStruct.uiBestDistance > 0 )

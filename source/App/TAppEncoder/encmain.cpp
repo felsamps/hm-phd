@@ -40,6 +40,7 @@
 #include "TAppEncTop.h"
 #include "TAppCommon/program_options_lite.h"
 #include "TLibEncoder/TEncMemoryTracer.h"
+#include "TLibEncoder/TEncVectorsTracing.h"
 
 using namespace std;
 namespace po = df::program_options_lite;
@@ -47,12 +48,14 @@ namespace po = df::program_options_lite;
 //! \ingroup TAppEncoder
 //! \{
 
-void initStaticClasses() {
-	TEncMemoryTracer::init("trace.txt");
-}
-
 void finalizeStaticClasses() {
+#if MEM_TRACE_EN
 	TEncMemoryTracer::finalize();
+#endif
+#if MV_TRACE_EN
+	TEncVectorsTracing::reportMv();
+	TEncVectorsTracing::finalize();
+#endif
 }
 
 
@@ -92,8 +95,8 @@ int main(int argc, char* argv[])
   }
   
   //Felipe: static classes initialization
-  initStaticClasses();
 
+  
   // starting time
   double dResult;
   long lBefore = clock();
@@ -105,6 +108,7 @@ int main(int argc, char* argv[])
   dResult = (double)(clock()-lBefore) / CLOCKS_PER_SEC;
   printf("\n Total Time: %12.3f sec.\n", dResult);
   
+  //Felipe
   finalizeStaticClasses();
 
   // destroy application encoder class

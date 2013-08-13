@@ -44,6 +44,8 @@
 
 #include "TAppEncTop.h"
 #include "TLibEncoder/AnnexBwrite.h"
+#include "TLibEncoder/TEncVectorsTracing.h"
+#include "TLibEncoder/TEncMemoryTracer.h"
 
 using namespace std;
 
@@ -389,6 +391,17 @@ Void TAppEncTop::encode()
   xInitLibCfg();
   xCreateLib();
   xInitLib();
+  
+#if MEM_TRACE_EN
+	TEncMemoryTracer::init("mem_trace.txt");
+#endif
+	
+#if MV_TRACE_EN
+	UInt w = getTEncTop().getSourceWidth();
+	UInt h = getTEncTop().getSourceHeight();
+		
+	TEncVectorsTracing::init("mv_trace.txt", w, h);
+#endif  
   
   // main encoder loop
   Int   iNumEncoded = 0;

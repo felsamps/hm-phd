@@ -29,7 +29,7 @@ public:
     static void insertFirstSearch(Int xStart, Int yStart);
     static void insertCandidate(Int xCand, Int yCand);
     static void insertRasterSearch(Int xLeft, Int xRight, Int yTop, Int yBottom);
-    
+    static void finalizeLCU();
 };
 
 #endif	/* TENCMEMORYTRACER_H */

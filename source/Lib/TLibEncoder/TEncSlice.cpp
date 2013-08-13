@@ -706,7 +706,8 @@ Void TEncSlice::precompressSlice( TComPic*& rpcPic )
     
     // try compress
     compressSlice   ( rpcPic );
-    
+	
+	    
     Double dPicRdCost;
     UInt64 uiPicDist        = m_uiPicDist;
     UInt64 uiALFBits        = 0;
@@ -1104,6 +1105,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 #endif
 
 	  //Felipe
+#if MEM_TRACE_EN
 	  Int xLCU = pcCU->getCUPelX();
 	  Int yLCU = pcCU->getCUPelY();
 	  Int rasterIdCU = (xLCU/64) + ( (yLCU/64) * pcCU->getPic()->getFrameWidthInCU() );
@@ -1112,10 +1114,18 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 	  if(pcCU->getSlice()->getSliceType() != I_SLICE) {
 		TEncMemoryTracer::initLCU(xLCU, yLCU, idTile, pcCU->getPic()->getPOC());
 	  }	  
+#endif
+
 	  
       // run CU encoder
       m_pcCuEncoder->compressCU( pcCU );
 
+#if MEM_TRACE_EN
+	  if(pcCU->getSlice()->getSliceType() != I_SLICE) {
+		  TEncMemoryTracer::finalizeLCU();
+	  }
+#endif
+	  
 #if !TICKET_1090_FIX
 #if RATE_CONTROL_LAMBDA_DOMAIN
       if ( m_pcCfg->getUseRateCtrl() )

@@ -52,6 +52,7 @@ OBJS          	= \
 			$(OBJ_DIR)/WeightPredAnalysis.o \
 			$(OBJ_DIR)/TEncRateCtrl.o \
 			$(OBJ_DIR)/TEncMemoryTracer.o \
+			$(OBJ_DIR)/TEncVectorsTracing.o \
 
 LIBS				= -lpthread
 
