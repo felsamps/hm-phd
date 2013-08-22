@@ -46,6 +46,7 @@
 #include "TLibCommon/SEI.h"
 #include "TLibCommon/NAL.h"
 #include "NALwrite.h"
+#include "TEncMemoryTracer.h"
 #include <time.h>
 #include <math.h>
 
@@ -874,6 +875,11 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
     startCUAddrSliceIdx++;
     m_storedStartCUAddrForEncodingSliceSegment.push_back(nextCUAddr);
     startCUAddrSliceSegmentIdx++;
+	
+	/* TODO frame mark */
+#if MEM_TRACE_EN
+	TEncMemoryTracer::initFrame(pcPic->getPOC());
+#endif
 
     while(nextCUAddr<uiRealEndAddress) // determine slice boundaries
     {
@@ -926,6 +932,10 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 
       nextCUAddr = (startCUAddrSlice > startCUAddrSliceSegment) ? startCUAddrSlice : startCUAddrSliceSegment;
     }
+#if MEM_TRACE_EN
+	TEncMemoryTracer::finalizeFrame();
+#endif
+	
     m_storedStartCUAddrForEncodingSlice.push_back( pcSlice->getSliceCurEndCUAddr());
     startCUAddrSliceIdx++;
     m_storedStartCUAddrForEncodingSliceSegment.push_back(pcSlice->getSliceCurEndCUAddr());

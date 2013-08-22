@@ -187,7 +187,7 @@
 #define MEM_TRACE_EN 1
 #define MV_TRACE_EN 1
 
-#define MV_TARGET_CU_SIZE 16
+#define MV_TARGET_CU_SIZE 32
 #define MV_TARGET_PU SIZE_2Nx2N
 
 

@@ -1112,7 +1112,7 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 	  Int idTile = pcCU->getPic()->getPicSym()->getTileIdxMap(rasterIdCU);
 	  
 	  if(pcCU->getSlice()->getSliceType() != I_SLICE) {
-		TEncMemoryTracer::initLCU(xLCU, yLCU, idTile, pcCU->getPic()->getPOC());
+		TEncMemoryTracer::initLCU(xLCU, yLCU, idTile);
 	  }	  
 #endif
 
