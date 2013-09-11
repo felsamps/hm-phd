@@ -7,9 +7,21 @@ bool TEncMemoryTracer::firstOrRasterSearchFlag;
 TEncMemoryTracer::TEncMemoryTracer() {
 }
 
-void TEncMemoryTracer::init(std::string fileName) {
+void TEncMemoryTracer::init(std::string fileName, UInt wFrame, UInt hFrame, UInt tileCols, UInt tileRows, UInt searchRange) {
 	fp.open(fileName.c_str(), std::fstream::out);
 	firstOrRasterSearchFlag = false;
+	
+	std::string outStr = "";
+	
+	std::stringstream ss;
+	ss << wFrame << " ";
+	ss << hFrame << " ";
+	ss << tileCols << " ";
+	ss << tileRows << " ";
+	ss << searchRange << std::endl;
+	
+	outStr += ss.str();
+	fp << outStr;
 }
 
 void TEncMemoryTracer::finalize() {
@@ -98,6 +110,14 @@ void TEncMemoryTracer::insertRasterSearch(Int xLeft, Int xRight, Int yTop, Int y
 
 void TEncMemoryTracer::finalizeLCU() {
 	fp << "E" << std::endl;
+}
+
+void TEncMemoryTracer::finalizePU() {
+	fp << "p" << std::endl;
+}
+
+void TEncMemoryTracer::finalizeCU() {
+	fp << "u" << std::endl;
 }
 
 void TEncMemoryTracer::finalizeFrame() {

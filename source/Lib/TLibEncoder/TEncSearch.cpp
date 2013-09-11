@@ -4102,6 +4102,11 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
     xPatternSearchFast  ( pcCU, pcPatternKey, piRefY, iRefStride, &cMvSrchRngLT, &cMvSrchRngRB, rcMv, ruiCost );
   }
   
+#if MEM_TRACE_EN
+  if( !bBi ) {
+	TEncMemoryTracer::finalizePU();
+  }
+#endif
       //TODO GET MOTION VECTORS
 #if MV_TRACE_EN
   UInt idRefFrame = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPOC();

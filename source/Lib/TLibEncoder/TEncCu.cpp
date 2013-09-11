@@ -771,6 +771,7 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt u
 #endif
   }
 
+
   // copy orginal YUV samples to PCM buffer
   if( rpcBestCU->isLosslessCoded(0) && (rpcBestCU->getIPCMFlag(0) == false))
   {
@@ -807,6 +808,14 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt u
     iMinQP = iStartQP;
     iMaxQP = iStartQP;
   }
+  
+    			   
+#if MEM_TRACE_EN
+  if( rpcBestCU->getSlice()->getSliceType() != I_SLICE ) {
+	TEncMemoryTracer::finalizeCU();
+  }
+#endif  
+  
 #if RATE_CONTROL_LAMBDA_DOMAIN
   if ( m_pcEncCfg->getUseRateCtrl() )
   {
@@ -863,11 +872,13 @@ Void TEncCu::xCompressCU( TComDataCU*& rpcBestCU, TComDataCU*& rpcTempCU, UInt u
           }
           else
           {
+
             xCompressCU( pcSubBestPartCU, pcSubTempPartCU, uhNextDepth, rpcBestCU->getPartitionSize(0) );
           }
 #else
           xCompressCU( pcSubBestPartCU, pcSubTempPartCU, uhNextDepth );
 #endif
+		  
 
           rpcTempCU->copyPartFrom( pcSubBestPartCU, uiPartUnitIdx, uhNextDepth );         // Keep best part data to current temporary data.
           xCopyYuv2Tmp( pcSubBestPartCU->getTotalNumPart()*uiPartUnitIdx, uhNextDepth );

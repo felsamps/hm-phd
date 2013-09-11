@@ -393,7 +393,14 @@ Void TAppEncTop::encode()
   xInitLib();
   
 #if MEM_TRACE_EN
-	TEncMemoryTracer::init("mem_trace.txt");
+    UInt wFrame = getTEncTop().getSourceWidth();
+	UInt hFrame = getTEncTop().getSourceHeight();
+	UInt tileCols = getTEncTop().getNumColumnsMinus1() + 1;
+	UInt tileRows = getTEncTop().getNumRowsMinus1() + 1;
+	UInt searchRange = getTEncTop().getSearchRange();
+	
+	TEncMemoryTracer::init("mem_trace.txt", wFrame, hFrame, tileCols, tileRows, searchRange);
+	
 #endif
 	
 #if MV_TRACE_EN

@@ -20,7 +20,7 @@ public:
     
     TEncMemoryTracer();
     
-    static void init(std::string fileName);
+    static void init(std::string fileName, UInt wFrame, UInt hFrame, UInt tileCols, UInt tileRows, UInt searchRange);
     static void finalize();
     
     static void initFrame(Int idCurrFrame);
@@ -33,6 +33,9 @@ public:
     static void insertRasterSearch(Int xLeft, Int xRight, Int yTop, Int yBottom);
     static void finalizeLCU();
     static void finalizeFrame();
+	static void finalizeCU();
+	static void finalizePU();
+	
 };
 
 #endif	/* TENCMEMORYTRACER_H */
