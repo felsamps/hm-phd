@@ -878,7 +878,9 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
 	
 	/* TODO frame mark */
 #if MEM_TRACE_EN
-	TEncMemoryTracer::initFrame(pcPic->getPOC());
+	if(pcSlice->getSliceType() != I_SLICE) {
+			TEncMemoryTracer::initFrame(pcPic->getPOC());
+	}
 #endif
 
     while(nextCUAddr<uiRealEndAddress) // determine slice boundaries
@@ -933,7 +935,9 @@ Void TEncGOP::compressGOP( Int iPOCLast, Int iNumPicRcvd, TComList<TComPic*>& rc
       nextCUAddr = (startCUAddrSlice > startCUAddrSliceSegment) ? startCUAddrSlice : startCUAddrSliceSegment;
     }
 #if MEM_TRACE_EN
-	TEncMemoryTracer::finalizeFrame();
+	if(pcSlice->getSliceType() != I_SLICE) {
+		TEncMemoryTracer::finalizeFrame();
+	}
 #endif
 	
     m_storedStartCUAddrForEncodingSlice.push_back( pcSlice->getSliceCurEndCUAddr());

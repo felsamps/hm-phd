@@ -184,7 +184,8 @@
 #define CABAC_INIT_PRESENT_FLAG     1
 
 //Felipe: definitions to enable static classes
-#define MEM_TRACE_EN 1
+#define PARAM_TRACE_EN 1
+#define MEM_TRACE_EN 0
 #define MV_TRACE_EN 0
 
 #define MV_TARGET_CU_SIZE 32

@@ -46,6 +46,7 @@
 #include "TLibEncoder/AnnexBwrite.h"
 #include "TLibEncoder/TEncVectorsTracing.h"
 #include "TLibEncoder/TEncMemoryTracer.h"
+#include "TLibEncoder/TEncParametersExtractor.h"
 
 using namespace std;
 
@@ -403,12 +404,19 @@ Void TAppEncTop::encode()
 	
 #endif
 	
-#if MV_TRACE_EN
+#if MV_TRACE_EN or PARAM_TRACE_EN
 	UInt w = getTEncTop().getSourceWidth();
 	UInt h = getTEncTop().getSourceHeight();
-		
+#endif
+	
+#if MV_TRACE_EN
 	TEncVectorsTracing::init("mv_trace.txt", w, h);
 #endif  
+	
+#if PARAM_TRACE_EN
+	TEncParametersExtractor::init(w, h, getTEncTop().getFramesToBeEncoded());
+#endif
+	
   
   // main encoder loop
   Int   iNumEncoded = 0;

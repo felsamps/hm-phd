@@ -41,6 +41,7 @@
 #include "TAppCommon/program_options_lite.h"
 #include "TLibEncoder/TEncMemoryTracer.h"
 #include "TLibEncoder/TEncVectorsTracing.h"
+#include "TLibEncoder/TEncParametersExtractor.h"
 
 using namespace std;
 namespace po = df::program_options_lite;
@@ -55,6 +56,11 @@ void finalizeStaticClasses() {
 #if MV_TRACE_EN
 	TEncVectorsTracing::reportMv();
 	TEncVectorsTracing::finalize();
+#endif
+#if PARAM_TRACE_EN
+	std::cout << "PASSEI AQUI" << std::endl;
+	TEncParametersExtractor::report();
+	TEncParametersExtractor::close();
 #endif
 }
 

@@ -38,6 +38,7 @@
 #include "TEncTop.h"
 #include "TEncSlice.h"
 #include "TEncMemoryTracer.h"
+#include "TEncParametersExtractor.h"
 #include <math.h>
 
 //! \ingroup TLibEncoder
@@ -707,7 +708,9 @@ Void TEncSlice::precompressSlice( TComPic*& rpcPic )
     // try compress
     compressSlice   ( rpcPic );
 	
-	    
+	
+
+	
     Double dPicRdCost;
     UInt64 uiPicDist        = m_uiPicDist;
     UInt64 uiALFBits        = 0;
@@ -1119,7 +1122,12 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
 	  
       // run CU encoder
       m_pcCuEncoder->compressCU( pcCU );
-
+	  
+#if PARAM_TRACE_EN
+	  TEncParametersExtractor::updateCTU(pcCU);
+#endif
+	  	
+	
 #if MEM_TRACE_EN
 	  if(pcCU->getSlice()->getSliceType() != I_SLICE) {
 		  TEncMemoryTracer::finalizeLCU();
@@ -1296,6 +1304,8 @@ Void TEncSlice::compressSlice( TComPic*& rpcPic )
     m_pcRateCtrl->updateFrameData(m_uiPicTotalBits);
   }
 #endif
+  
+
 }
 
 /**

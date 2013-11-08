@@ -53,6 +53,7 @@ OBJS          	= \
 			$(OBJ_DIR)/TEncRateCtrl.o \
 			$(OBJ_DIR)/TEncMemoryTracer.o \
 			$(OBJ_DIR)/TEncVectorsTracing.o \
+			$(OBJ_DIR)/TEncParametersExtractor.o \
 
 LIBS				= -lpthread
 
