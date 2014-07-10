@@ -55,7 +55,6 @@ void TEncParametersExtractor::updateCTU(TComDataCU* pcCU) {
 
 void TEncParametersExtractor::report() {
 	for (int f = 0; f < framesToBeCoded; f++) {
-		std::cout << "FRAMES LOOP" << std::endl;
 		for (int y = 0; y < height/4; y++) {
 			for (int x = 0; x < width/4; x++) {
 				fpSkip << (skipMap[f][x][y] ? "1" : "0") << " ";

@@ -47,6 +47,7 @@
 #include "TLibEncoder/TEncVectorsTracing.h"
 #include "TLibEncoder/TEncMemoryTracer.h"
 #include "TLibEncoder/TEncParametersExtractor.h"
+#include "TLibEncoder/TEncDataApproximationEval.h"
 
 using namespace std;
 
@@ -393,9 +394,11 @@ Void TAppEncTop::encode()
   xCreateLib();
   xInitLib();
   
+  UInt wFrame = getTEncTop().getSourceWidth();
+  UInt hFrame = getTEncTop().getSourceHeight();
+  
 #if MEM_TRACE_EN
-    UInt wFrame = getTEncTop().getSourceWidth();
-	UInt hFrame = getTEncTop().getSourceHeight();
+    
 	UInt tileCols = getTEncTop().getNumColumnsMinus1() + 1;
 	UInt tileRows = getTEncTop().getNumRowsMinus1() + 1;
 	UInt searchRange = getTEncTop().getSearchRange();
@@ -415,6 +418,10 @@ Void TAppEncTop::encode()
 	
 #if PARAM_TRACE_EN
 	TEncParametersExtractor::init(w, h, getTEncTop().getFramesToBeEncoded());
+#endif
+	
+#if APPROX_EN
+	TEncDataApproximationEval::init(wFrame, hFrame);
 #endif
 	
   

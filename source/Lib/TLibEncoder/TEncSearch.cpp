@@ -41,6 +41,7 @@
 #include "TEncSearch.h"
 #include "TEncMemoryTracer.h"
 #include "TEncVectorsTracing.h"
+#include "TEncDataApproximationEval.h"
 #include <math.h>
 
 //! \ingroup TLibEncoder
@@ -4068,8 +4069,17 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
                             pcYuv->getStride(),
                             0, 0 );
   
+  /* Felipe: 
+   * piRefY is the pointer for the luminance samples
+   * iRefStride is the step to be taken to change for the next reference frame line  
+   */
+  
   Pel*        piRefY      = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPicYuvRec()->getLumaAddr( pcCU->getAddr(), pcCU->getZorderIdxInCU() + uiPartAddr );
   Int         iRefStride  = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPicYuvRec()->getStride();
+  
+#if APPROX_EN
+  TEncDataApproximationEval::printLumaSamplesData(piRefY, iRefStride);
+#endif
   
   TComMv      cMvPred = *pcMvPred;
   
