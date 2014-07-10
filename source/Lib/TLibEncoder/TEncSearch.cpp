@@ -4078,7 +4078,9 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   Int         iRefStride  = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPicYuvRec()->getStride();
   
 #if APPROX_EN
-  TEncDataApproximationEval::printLumaSamplesData(piRefY, iRefStride);
+  TEncDataApproximationEval::copyLumaSamples(piRefY, iRefStride);
+  TEncDataApproximationEval::printBackupLSamples();
+  TEncDataApproximationEval::close(); //temporary!!
 #endif
   
   TComMv      cMvPred = *pcMvPred;
