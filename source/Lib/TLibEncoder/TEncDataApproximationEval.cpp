@@ -1,6 +1,8 @@
 #include "TEncDataApproximationEval.h"
 
 Pel* TEncDataApproximationEval::backup;
+Pel* TEncDataApproximationEval::faulty;
+
 Int TEncDataApproximationEval::stride;
 Int TEncDataApproximationEval::width, TEncDataApproximationEval::height;
 	
@@ -8,7 +10,12 @@ std::fstream TEncDataApproximationEval::fout;
 
 bool TEncDataApproximationEval::firstFrameFlag;
 
-const UInt TEncDataApproximationEval::faultOcc;
+UInt TEncDataApproximationEval::faultOcc;
+
+Int TEncDataApproximationEval::iSrchRngHorLeft;
+Int TEncDataApproximationEval::iSrchRngHorRight;
+Int TEncDataApproximationEval::iSrchRngVerTop;
+Int TEncDataApproximationEval::iSrchRngVerBottom;
 
 TEncDataApproximationEval::TEncDataApproximationEval() {
 }
@@ -21,57 +28,127 @@ void TEncDataApproximationEval::init(Int w, Int h) {
 	firstFrameFlag = true;
 	
 	backup = new Pel[width * height];
+	faulty = new Pel[width * height];
 	
 	srand(time(NULL));
+	
+	firstFrameFlag = true;
 }
 
 void TEncDataApproximationEval::close() {
 	fout.close();
 }
 
-void TEncDataApproximationEval::printLSamples(Pel* p, Int stride) {
-	if(firstFrameFlag) {
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				fout << p[x + y*stride] << " ";
-			}
-			fout << std::endl;
+void TEncDataApproximationEval::initSearchWindow(TComMv& mvLT, TComMv& mvRB, Int xCU, Int yCU) {
+	iSrchRngHorLeft   = mvLT.getHor();
+	iSrchRngHorRight  = mvRB.getHor();
+	iSrchRngVerTop    = mvLT.getVer();
+	iSrchRngVerBottom = mvRB.getVer();
+	
+}
+
+
+void TEncDataApproximationEval::saveSearchWindow(Pel* p, Int stride) {
+	Pel* pOrig, *pAuxOrig, *pBackup;
+	pOrig = p;
+	pOrig += (iSrchRngVerTop * stride);	//point the pointer to the first line of the search window
+	
+	pBackup = backup;
+	
+	for (int y = iSrchRngVerTop; y < iSrchRngVerBottom; y++) {
+		for (int x = iSrchRngHorLeft; x < iSrchRngHorRight; x++) {
+			pAuxOrig = pOrig + x; //point the auxiliar pointer to the right sample inside the search window limits
+			*pBackup = *pAuxOrig;
+			
+			pBackup++;
 		}
-		firstFrameFlag = false;
-	}	
+		pOrig += stride;
+		
+		fout << std::endl;
+		
+	}
+}
+
+void TEncDataApproximationEval::recoverySearchWindow(Pel* p, Int stride) {
+	Pel* pOrig, *pAuxOrig, *pBackup;
+	pOrig = p;
+	pOrig += (iSrchRngVerTop * stride);	//point the pointer to the first line of the search window
+	
+	pBackup = backup;
+	
+	for (int y = iSrchRngVerTop; y < iSrchRngVerBottom; y++) {
+		for (int x = iSrchRngHorLeft; x < iSrchRngHorRight; x++) {
+			pAuxOrig = pOrig + x; //point the auxiliar pointer to the right sample inside the search window limits
+			*pAuxOrig = *pBackup;
+			
+			pBackup++;
+		}
+		pOrig += stride;
+		
+		fout << std::endl;
+		
+	}
+}
+
+void TEncDataApproximationEval::recoveryFaultySearchWindow(Pel* p, Int stride) {
+	Pel* pOrig, *pAuxOrig, *pFaulty;
+	pOrig = p;
+	pOrig += (iSrchRngVerTop * stride);	//point the pointer to the first line of the search window
+	
+	pFaulty = faulty;
+	
+	for (int y = iSrchRngVerTop; y < iSrchRngVerBottom; y++) {
+		for (int x = iSrchRngHorLeft; x < iSrchRngHorRight; x++) {
+			pAuxOrig = pOrig + x; //point the auxiliar pointer to the right sample inside the search window limits
+			*pAuxOrig = *pFaulty;
+			
+			pFaulty++;
+		}
+		pOrig += stride;
+		
+		fout << std::endl;
+		
+	}
 }
 
 void TEncDataApproximationEval::printBackupLSamples() {
-	if(firstFrameFlag) {
-		
-		insertFaults(); //INSERTING FAULTS TO THE REFERENCE FRAME SAMPLES
-		
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				fout << backup[x + y*width] << " ";
-			}
-			fout << std::endl;
+	Pel *pBackup = backup;	
+	
+	for (int y = iSrchRngVerTop; y < iSrchRngVerBottom; y++) {
+		for (int x = iSrchRngHorLeft; x < iSrchRngHorRight; x++) {
+			fout << *pBackup << " ";
+			pBackup ++;
 		}
-		firstFrameFlag = false;
-	}	
+		fout << std::endl;
+	}
 }
 
-void TEncDataApproximationEval::copyLumaSamples(Pel* p, Int stride) {
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			backup[x + y*width] = p[x + y*stride];
+void TEncDataApproximationEval::printSearchWindow(Pel* p, Int stride) {
+	
+	Pel* pAux;
+	p += (iSrchRngVerTop * stride);	//point the pointer to the first line of the search window
+		
+	for (int y = iSrchRngVerTop; y < iSrchRngVerBottom; y++) {
+		for (int x = iSrchRngHorLeft; x < iSrchRngHorRight; x++) {
+			pAux = p + x; //point the auxiliar pointer to the right sample inside the search window limits
+			fout << *pAux << " ";
 		}
+		p += stride;
+		fout << std::endl;
 	}
+	firstFrameFlag = false;
 	
 }
 
 void TEncDataApproximationEval::insertFaults() {
 	
+	Pel *pBackup = backup;
+	Pel *pFaulty = faulty;
 	
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
+	for (int y = iSrchRngVerTop; y < iSrchRngVerBottom; y++) {
+		for (int x = iSrchRngHorLeft; x < iSrchRngHorRight; x++) {
 			
-			Pel sample = backup[x + y*width];
+			Pel sample = *pBackup;
 			Pel masc = 0x0001; //16-bit data
 			
 			while(masc != 0x0100) { 
@@ -90,7 +167,9 @@ void TEncDataApproximationEval::insertFaults() {
 				masc = masc << 1;
 			}
 			
-			backup[x + y*width] = sample;
+			*faulty = sample;
+			pFaulty ++;
+			pBackup ++;
 		}
 	}
 }

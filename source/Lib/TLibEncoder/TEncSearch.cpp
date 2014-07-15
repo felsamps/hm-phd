@@ -4077,11 +4077,7 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   Pel*        piRefY      = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPicYuvRec()->getLumaAddr( pcCU->getAddr(), pcCU->getZorderIdxInCU() + uiPartAddr );
   Int         iRefStride  = pcCU->getSlice()->getRefPic( eRefPicList, iRefIdxPred )->getPicYuvRec()->getStride();
   
-#if APPROX_EN
-  TEncDataApproximationEval::copyLumaSamples(piRefY, iRefStride);
-  TEncDataApproximationEval::printBackupLSamples();
-  TEncDataApproximationEval::close(); //temporary!!
-#endif
+
   
   TComMv      cMvPred = *pcMvPred;
   
@@ -4094,6 +4090,15 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
   m_pcRdCost->setCostScale  ( 2 );
 
   setWpScalingDistParam( pcCU, iRefIdxPred, eRefPicList );
+
+#if APPROX_EN  
+	TEncDataApproximationEval::initSearchWindow(cMvSrchRngLT, cMvSrchRngRB, pcCU->getCUPelX(), pcCU->getCUPelY());  
+
+	TEncDataApproximationEval::saveSearchWindow(piRefY, iRefStride);
+	TEncDataApproximationEval::insertFaults();
+	TEncDataApproximationEval::recoveryFaultySearchWindow(piRefY, iRefStride);
+
+#endif  
   
   //Felipe: init PU tracing
 #if MEM_TRACE_EN
@@ -4114,6 +4119,10 @@ Void TEncSearch::xMotionEstimation( TComDataCU* pcCU, TComYuv* pcYuvOrg, Int iPa
     xPatternSearchFast  ( pcCU, pcPatternKey, piRefY, iRefStride, &cMvSrchRngLT, &cMvSrchRngRB, rcMv, ruiCost );
   }
   
+#if APPROX_EN 
+	TEncDataApproximationEval::recoverySearchWindow(piRefY, iRefStride);
+#endif
+	
 #if MEM_TRACE_EN
   if( !bBi ) {
 	TEncMemoryTracer::finalizePU();

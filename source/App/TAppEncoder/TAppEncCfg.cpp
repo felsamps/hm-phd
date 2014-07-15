@@ -48,6 +48,7 @@ static istream& operator>>(istream &, Profile::Name &);
 
 #include "TAppCommon/program_options_lite.h"
 #include "TLibEncoder/TEncRateCtrl.h"
+#include "TLibEncoder/TEncDataApproximationEval.h"
 #ifdef WIN32
 #define strdup _strdup
 #endif
@@ -260,6 +261,7 @@ Bool TAppEncCfg::parseCfg( Int argc, Char* argv[] )
   ("c", po::parseConfigFile, "configuration file name")
   
   // File, I/O and source parameters
+  ("ErrorRate,-err",		TEncDataApproximationEval::faultOcc, (UInt)0, "Error rate for data approximation evaluation")
   ("InputFile,i",           cfg_InputFile,     string(""), "Original YUV input file name")
   ("BitstreamFile,b",       cfg_BitstreamFile, string(""), "Bitstream output file name")
   ("ReconFile,o",           cfg_ReconFile,     string(""), "Reconstructed YUV output file name")
